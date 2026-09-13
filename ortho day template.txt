@@ -1,0 +1,98 @@
+{\rtf1\ansi\ansicpg950\cocoartf2870
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 ArialMT;}
+{\colortbl;\red255\green255\blue255;\red26\green26\blue26;\red255\green255\blue255;}
+{\*\expandedcolortbl;;\cssrgb\c13333\c13333\c13333;\cssrgb\c100000\c100000\c100000;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww19980\viewh13920\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs20 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 A. Common Assessment Notes\
+Attended today for Bone Health Medication FU\'a0 / Post Operation FU\
+- Fracture site:\'a0 Right / Left / Bilateral\'a0 \'a0NOF /TOF/Subtrochanteric/Greater trochanter/Pubic rami/ Others: _____\
+- Post Hip operation / Collapsed spine:\'a0 (DD/MM/YY): ______\'a0 Months ___\
+- Occupation:\'a0 Retired / self maintainer / housewife / home dependent\'a0 / OAH resident / Worker\
+- Premorbid function: ADL: Independent/ assisted/ dependent ; IADL: Independent/ partial dependent\
+- Came with ____________________ / Come alone\
+\
+Social History and Home Environment :\
+- Lives with _______\'a0 / Live alone / Daytime alone / Main carer: ______ /\'a0 OAHR\
+- Home environment: Direct lift landing /\'a0 Non-direct lift landing ( ____FOS)\
+- Bathing facility: Standard toilet / Squat toilet\'a0 /\'a0 Bathtub / Shower cubical with handrail at shower and / or toilet area\
+- Assistive device available: Safety alarm / Wheelchair (standard / transit) / Commode /\'a0 Shower chair / Bathboard / Raised toilet seat / Long handle reacher / Nil\
+-\'a0Walking aids: Indoor: unaided / stick\'a0 / quad/ frame / rollator\'a0 ;\'a0 Outdoor :transit wheelchair\
+-\'a0Social Service: Home help service (MOW / Cleansing / Bathing / Escorting) /\'a0Day\'a0Care Center / Other: _________/\'a0 Nil\
+\
+Fall History :\
+Fall / Near fall incident since (Discharge\'a0 / Recent 1 year):\'a0 Yes ( ______times ) /\'a0 No\
+Episode 1 Location: Indoor _________/ Outdoor: __________\
+Reason: Dizziness /\'a0 LL weakness /\'a0 Tripped /\'a0 Slipped\'a0 / Environmental hazards /\'a0 Risky behavior /\'a0 Unknown\'a0 / Others: ___\
+\
+\
+\
+B. Physical Assessment Notes\
+Vital Sign:\'a0 BP __/__ mmHg ;\'a0 Pulse__\'a0 / mins ;\'a0 \'a0Afebrile /Febrile\
+[ ] Visual impaired\'a0 \'a0 \'a0[ ] Hearing Impaired\'a0 [ ] Nil Visual and Hearing Impaired\
+\
+Mental :\
+Reality orientation: Oriented to Time / Place / Person\
+Follow ___ steps command\
+Mood ______\
+Clock Drawing Test:\'a0 \'a0/10\
+\
+Physical Examination\'a0 :\
+Pain:\'a0 at fracture site / ________\'a0 (NPRS: /10)\
+ROM:\'a0 Full / Functional range / Limited / Contracture over _____\
+MMT:\'a0 Upper limb (Right|Left):  | \'a0 ;\'a0 Lower limb (Right|Left):  |\
+Balance:\
+Sitting balance: [ ] Satisfactory [ ] Fair [ ] Poor\
+Standing balance: [ ] Satisfactory [ ] Fair [ ] Poor\
+\
+Fall Risk Assessment :\
+Fear of Fall: [ ] Yes\'a0 [ ] No\
+Fall Efficacy Scale:\'a0 /100\
+\
+FRAT:\'a0 \'a0/20\'a0 \'a0Fall Risk Status: Low / Medium/ High Risk\
+Automatic High Risk Status:\
+[ ] Recent change in functional status and / or medication affecting safe mobility\
+[ ] Dizziness / postural hypotension\
+[ ] Nil\
+\
+Fall Risk Factor Checklist :\
+[ ] Vision: Difficulty seeing \'96 objects / signs / finding way around\
+[ ] Mobility: [ ] Unknown or appears unsafe [ ] impulsive [ ] forgets gait aid\
+[ ] Transfers: Unknown or appears unsafe\
+[ ] Behaviors: [ ] Agitation [ ] Confusion [ ] Disorientation [ ] Difficulty following instructions or non-compliant\
+[ ] ADL: [ ] Risk-taking behaviors [ ] Observed unsafe use of equipment\
+[ ] Footwear:  [ ] Unsafe:_______\'a0 \'a0 \'a0[ ] Inappropriate clothing\
+[ ] Environment: Difficulties with orientation to environment\
+[ ] Nutrition: Underweight / Low appetite\
+[ ] Continence: Reported or known urgency / Nocturia / Accidents\
+[ ] Nil\
+\
+Modified Barthel Index :\'a0 \'a0/100\
+Bowels: /10\'a0 Bladder: /10\'a0 Grooming:\'a0 /5\'a0 Toileting: /10\'a0 Feeding: /10 Dressing: /10\
+Bathing: /5\'a0 Transfer: /15 Mobility/ Wheelchair: /15\'a0 Stairs:\'a0 /10\
+\
+Chinese Lawton IADL :\'a0 \'a0/27\
+Use of telephone:\'a0 /3 Transportation: /3 Shopping: /3 Meal Preparation:\'a0 /3 Housework:\'a0 \'a0/3 Handyman Work: /3 Laundry: /3 Medication Mx: /3 Money Mx:\'a0 \'a0/3\
+\
+\
+\
+C. Problem :\
+- Fracture site Pain\
+- Impaired health status / multiple medical problems\
+- Impaired cognition / physical ability\
+- Impaired / Risky behavior in ADL function\
+- Inadequate social support\
+- Poor safety awareness\
+\'a0- Environmental hazards\
+- Others: _Deconditioning _( as compared with latest Fracture hip DC with MBI : ___ /100 )\
+- Nil significant fall risk identify\
+\
+\
+\
+D. Recommendation :\
+- Fall education talk provided. Continue Fragility Fracture\'a0Day\'a0Rehabilitation Service\
+- Not indicate / Suggest for Fragility Fracture\'a0Day\'a0Rehabilitation Training program ( Agreed / Refused )\
+}
