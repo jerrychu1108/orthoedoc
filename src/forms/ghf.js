@@ -35,7 +35,8 @@ export const GHF_PARTS = [
   // Bound for the ward's handover field: one line, and 250 characters it should fit
   // but is never cut to.
   { key: "G", title: "GREEN BOX", limit: 250, oneLine: true },
-  { key: "A", title: "COMMON ASSESSMENT NOTES" },
+  // Heads the copied note, so it is identifiable once pasted into the record.
+  { key: "A", title: "COMMON ASSESSMENT NOTES", header: "<Initial Assessment Note>" },
   { key: "D", title: "PROBLEM" },
   { key: "E", title: "RECOMMENDATION" }
 ];
@@ -225,7 +226,13 @@ export const GHF_COMPUTED = {
       const band = score && bandId ? answerOf(a, bandId) : "";
       return name + ": " + text + (band ? " (" + band + ")" : "");
     }).filter(Boolean);
-    return parts.length ? "Cognitive function: " + parts.join("; ") : "";
+    if (!parts.length) return "";
+    // The handover line says when the tests were done: a score taken before the
+    // operation and one taken after it mean different things to whoever reads it.
+    // Taken from the cognitive block's own timing question, without its day — the
+    // line is a summary, and the full wording prints above it in the note.
+    const when = { pre: "Pre-op ", post: "Post-op " }[a.ghf_cogTiming] || "";
+    return when + (when ? "c" : "C") + "ognitive function: " + parts.join("; ");
   }
 };
 
@@ -282,6 +289,17 @@ export const GHF_SECTIONS = [
     title: "Vital Signs",
     part: "A",
     questions: [
+      // Opens the note: everything below is read against whether the patient has had
+      // the operation yet. Same shape as the cognitive block's own timing question, so
+      // "Post-operation" carries its day in the chip's text box.
+      { id: "ghf_opTiming", type: "single", label: "Operation status",
+        options: [
+          { value: "pre", label: "Pre-operation" },
+          { value: "post", label: "Post-operation", detail: true,
+            detailPlaceholder: "day", detailJoiner: " Day " }
+        ],
+        report: "[{answer}]" },
+
       { id: "ghf_vitals", type: "composite", label: "Vital signs", hideLabel: true,
         parts: [
           { id: "bp", label: "BP", placeholder: "120/80", suffix: " mmHg" },

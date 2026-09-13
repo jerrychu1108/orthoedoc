@@ -71,7 +71,12 @@ export function buildSchemaSummary(a, sections, parts) {
   });
 
   const out = {};
-  parts.forEach(p => { out[p.key] = buf[p.key].join("\n").trimEnd(); });
+  parts.forEach(p => {
+    const body = buf[p.key].join("\n").trimEnd();
+    // A part may head its note with a fixed title. Only when there is a note to head:
+    // an untouched assessment stays empty rather than showing a title over nothing.
+    out[p.key] = body && p.header ? p.header + "\n\n" + body : body;
+  });
   return out;
 }
 

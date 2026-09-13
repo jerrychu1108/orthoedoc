@@ -4,10 +4,13 @@
 
 GREEN BOX
 =========
-otComment note; Premorbid ADL: MBI 100/100; Current ADL: MBI 100/100 (Supervision to Independent). adlNote text; Cognitive function: AMT: 10/10; CDT: 2/10; MoCA: 30/30 (>16th percentile). cogNote text
+otComment note; Premorbid ADL: MBI 100/100; Current ADL: MBI 100/100 (Supervision to Independent). adlNote text; Pre-op cognitive function: AMT: 10/10; CDT: 2/10; MoCA: 30/30 (>16th percentile). cogNote text
 
 COMMON ASSESSMENT NOTES
 =======================
+<Initial Assessment Note>
+
+[Pre-operation]
 Vital signs: BP 1 mmHg; Pulse 2/min; SpO2 3%, Room air; Afebrile
 
 PREMORBID FUNCTION
@@ -82,7 +85,7 @@ otComment note
 Premorbid ADL: MBI 100/100
 Current ADL: MBI 100/100 (Supervision to Independent)
 adlNote text
-Cognitive function: AMT: 10/10; CDT: 2/10; MoCA: 30/30 (>16th percentile)
+Pre-op cognitive function: AMT: 10/10; CDT: 2/10; MoCA: 30/30 (>16th percentile)
 cogNote text
 
 PROBLEM
@@ -108,10 +111,13 @@ Continue Hip Rehabilitation Program, Suggest Direct discharge home
 
 GREEN BOX
 =========
-otComment note; Premorbid ADL: MBI 100/100; Current ADL: Not tested due to pre-operation. adlNote text; Cognitive function: AMT: Not applicable; CDT: Not applicable; MoCA: Not applicable. cogNote text
+otComment note; Premorbid ADL: MBI 100/100; Current ADL: Not tested due to pre-operation. adlNote text; Pre-op cognitive function: AMT: Not applicable; CDT: Not applicable; MoCA: Not applicable. cogNote text
 
 COMMON ASSESSMENT NOTES
 =======================
+<Initial Assessment Note>
+
+[Pre-operation]
 Vital signs: BP 1 mmHg; Pulse 2/min; SpO2 3%, Room air; Afebrile
 
 PREMORBID FUNCTION
@@ -177,7 +183,7 @@ otComment note
 Premorbid ADL: MBI 100/100
 Current ADL: Not tested due to pre-operation
 adlNote text
-Cognitive function: AMT: Not applicable; CDT: Not applicable; MoCA: Not applicable
+Pre-op cognitive function: AMT: Not applicable; CDT: Not applicable; MoCA: Not applicable
 cogNote text
 
 PROBLEM

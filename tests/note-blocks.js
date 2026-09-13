@@ -210,8 +210,114 @@ console.log("\nI. Vital signs — Room air or a flow rate, never both");
   }
 
   ok("the retired free-text box is gone",
-     !app.GHF_SECTIONS.find(s => s.id === "vitals").questions[0].parts
-        .some(p => p.id === "o2"));
+     !app.schemaQuestions(app.GHF_SECTIONS).find(q => q.id === "ghf_vitals")
+        .parts.some(p => p.id === "o2"));
+}
+
+console.log("\nJ. The note's title and the operation status");
+{
+  const noteA = extra => {
+    const a = { formType: "ghf_initial" };
+    app.seedSchemaFields(a, app.GHF_SECTIONS);
+    Object.assign(a, { ghf_vitals: { bp: "123/78", pulse: "90", spo2: "99" },
+                       ghf_o2: "room", ghf_temp: "afebrile" }, extra);
+    app.clearHiddenSchemaAnswers(a, app.GHF_SECTIONS);
+    return app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS).A;
+  };
+  const head = extra => noteA(extra).split("\n").slice(0, 4).join("\n");
+
+  block("pre-operation", head({ ghf_opTiming: "pre" }),
+`<Initial Assessment Note>
+
+[Pre-operation]
+Vital signs: BP 123/78 mmHg; Pulse 90/min; SpO2 99%, Room air; Afebrile`);
+
+  block("post-operation carries its day",
+    head({ ghf_opTiming: "post", ghf_opTiming__d_post: "2" }),
+`<Initial Assessment Note>
+
+[Post-operation Day 2]
+Vital signs: BP 123/78 mmHg; Pulse 90/min; SpO2 99%, Room air; Afebrile`);
+
+  // The title heads the note, so it must not depend on the operation status having
+  // been answered — but it must not appear over nothing either.
+  ok("the title stands without an operation status",
+     head({}).startsWith("<Initial Assessment Note>\n\nVital signs:"), JSON.stringify(head({})));
+
+  const blank = () => {
+    const a = { formType: "ghf_initial" };
+    app.seedSchemaFields(a, app.GHF_SECTIONS);
+    return app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS);
+  };
+  ok("an untouched assessment prints no title at all", blank().A === "",
+     JSON.stringify(blank().A));
+
+  // The handover line is its own thing and takes no heading — it is one line for a
+  // 250-character field, and a title would eat a fifth of it.
+  const g = () => {
+    const a = { formType: "ghf_initial" };
+    app.seedSchemaFields(a, app.GHF_SECTIONS);   // seeds blanks, so answer after it
+    a.ghf_otComment = "Good rehab potential";
+    return app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS).G;
+  };
+  ok("the Green Box carries no title", g() === "Good rehab potential", JSON.stringify(g()));
+  ok("only part A declares a header",
+     app.GHF_PARTS.filter(p => p.header).map(p => p.key).join() === "A",
+     app.GHF_PARTS.filter(p => p.header).map(p => p.key).join());
+
+  ok("the operation status opens the vitals section",
+     app.GHF_SECTIONS.find(s => s.id === "vitals").questions[0].id === "ghf_opTiming");
+}
+
+console.log("\nK. The cognitive line says when the tests were done");
+{
+  // One computed field feeds both the OT comment and the Green Box, so the wording
+  // cannot drift between the note and the handover line.
+  const built = timing => {
+    const a = { formType: "ghf_initial" };
+    app.seedSchemaFields(a, app.GHF_SECTIONS);
+    a.ghf_amt = { age:1, time:1, addr:1, year:1, place:1, recog:1 };
+    a.ghf_cdt = 10;
+    a.ghf_otComment = "Good rehab potential";
+    a.ghf_cogTiming = timing;
+    if (timing === "post") a.ghf_cogTiming__d_post = "2";
+    app.clearHiddenSchemaAnswers(a, app.GHF_SECTIONS);
+    const p = app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS);
+    const A = p.A.split("\n");
+    const i = A.indexOf("OT COMMENT");
+    return { green: p.G, comment: i < 0 ? "" : A.slice(i + 1, i + 3).join("\n") };
+  };
+
+  const pre = built("pre"), post = built("post"), none = built("");
+
+  block("OT comment, pre-operation", pre.comment,
+`Good rehab potential
+Pre-op cognitive function: AMT: 6/10; CDT: 10/10`);
+  block("OT comment, post-operation", post.comment,
+`Good rehab potential
+Post-op cognitive function: AMT: 6/10; CDT: 10/10`);
+
+  block("Green Box, pre-operation", pre.green,
+    "Good rehab potential; Pre-op cognitive function: AMT: 6/10; CDT: 10/10");
+  block("Green Box, post-operation", post.green,
+    "Good rehab potential; Post-op cognitive function: AMT: 6/10; CDT: 10/10");
+
+  // Unanswered keeps the original wording rather than guessing, and keeps its capital.
+  block("unanswered stays as it was", none.green,
+    "Good rehab potential; Cognitive function: AMT: 6/10; CDT: 10/10");
+
+  // The day belongs to the full heading above, not to this one-line summary.
+  ok("the summary carries no day number", !/Day 2/.test(post.green + post.comment),
+     post.green);
+  ok("but the block heading above still does",
+     /Cognitive Assessment \(Post-operation Day 2\):/.test(
+       (() => {
+         const a = { formType: "ghf_initial" };
+         app.seedSchemaFields(a, app.GHF_SECTIONS);
+         a.ghf_cogTiming = "post"; a.ghf_cogTiming__d_post = "2"; a.ghf_cdt = 10;
+         app.clearHiddenSchemaAnswers(a, app.GHF_SECTIONS);
+         return app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS).A;
+       })()));
 }
 
 report();

@@ -196,7 +196,9 @@ the note), `flatPart` (`{ key, join }` — also feed a second part as one line),
 
 **Part keys:** `key`, `title`, `limit` (character count beneath the box, red when
 over), `oneLine` (the editor refuses Enter and turns a pasted break into the
-separator).
+separator), `header` (a fixed title above the generated note — printed only when the
+part has content, so an untouched assessment stays empty rather than showing a title
+over nothing).
 
 **The stale-value rule:** a hidden question's answer is **cleared from the record**,
 not merely hidden. `clearHiddenSchemaAnswers()` sweeps every section on each render,
