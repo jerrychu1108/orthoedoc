@@ -12,6 +12,14 @@ const parts = extra => {
   return app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS);
 };
 const build = extra => parts(extra).A;
+const sectOf = (text, head) => {
+  const A = text.split("\n");
+  const i = A.indexOf(head);
+  if (i < 0) return "";
+  let j = A.findIndex((l, k) => k > i && /^[A-Z][A-Z (]+\)?$/.test(l));
+  if (j < 0) j = A.length;
+  return A.slice(i, j).join("\n").replace(/\n+$/, "");
+};
 const sect = (extra, head) => {
   const A = build(extra).split("\n");
   const i = A.indexOf(head);
@@ -318,6 +326,131 @@ Post-op cognitive function: AMT: 6/10; CDT: 10/10`);
          app.clearHiddenSchemaAnswers(a, app.GHF_SECTIONS);
          return app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS).A;
        })()));
+}
+
+console.log("\nL. Reality orientation says what failed, not only what passed");
+{
+  const line = picks => {
+    const a = { formType: "ghf_initial" };
+    app.seedSchemaFields(a, app.GHF_SECTIONS);
+    a.ghf_orientation = picks;
+    app.clearHiddenSchemaAnswers(a, app.GHF_SECTIONS);
+    return app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS).A
+      .split("\n").find(l => /rient/.test(l)) || "";
+  };
+
+  block("all three", line(["time", "place", "person"]),
+    "Oriented to time, place and person");
+  block("one of three", line(["time"]),
+    "Oriented to time; Disoriented to place and person");
+  block("two of three", line(["time", "place"]),
+    "Oriented to time and place; Disoriented to person");
+  block("declared order, not tap order", line(["person", "time"]),
+    "Oriented to time and person; Disoriented to place");
+  block("disoriented to all", line(["disoriented"]),
+    "Disoriented to time, place and person");
+  block("unable to assess is unchanged", line(["unable"]),
+    "Unable to assess orientation");
+
+  // Nothing ticked already means "not asked" — which is exactly why the chip exists.
+  ok("nothing ticked prints no line", line([]) === "", JSON.stringify(line([])));
+
+  // Driving the real chip handler, so exclusivity is exercised as written.
+  const tap = (start, label) => {
+    const a = { id: "t", formType: "ghf_initial", date: "2026-03-04" };
+    app.seedSchemaFields(a, app.GHF_SECTIONS);
+    a.ghf_orientation = start;
+    app.State.assessments = { t: a };
+    app.State.currentId = "t";
+    const q = app.schemaQuestions(app.GHF_SECTIONS).find(x => x.id === "ghf_orientation");
+    const chip = chipNamed(app.schemaWidget(a, q), label);
+    if (!chip) return null;
+    chip.handlers.click.forEach(fn => fn());
+    return a.ghf_orientation;
+  };
+
+  ok("\"Disoriented to all\" clears the three",
+     JSON.stringify(tap(["time", "place"], "Disoriented to all")) === '["disoriented"]',
+     JSON.stringify(tap(["time", "place"], "Disoriented to all")));
+  ok("and picking one clears it back",
+     JSON.stringify(tap(["disoriented"], "Time")) === '["time"]',
+     JSON.stringify(tap(["disoriented"], "Time")));
+  ok("\"Unable to assess\" still clears everything",
+     JSON.stringify(tap(["time", "place"], "Unable to assess")) === '["unable"]',
+     JSON.stringify(tap(["time", "place"], "Unable to assess")));
+  ok("the two exclusives clear each other",
+     JSON.stringify(tap(["disoriented"], "Unable to assess")) === '["unable"]',
+     JSON.stringify(tap(["disoriented"], "Unable to assess")));
+
+  ok("the caption no longer says \"oriented to\"",
+     app.schemaQuestions(app.GHF_SECTIONS)
+        .find(q => q.id === "ghf_orientation").label === "Reality orientation");
+}
+
+console.log("\nM. One Pre-op / Post-op choice for the whole Functional Assessment");
+{
+  const MBI = { bowels:10, bladder:10, grooming:5, toileting:10, feeding:10,
+                dressing:10, bathing:5, transfer:15, mobility:15, stairs:10 };
+  const IADL = { phone:3, transport:3, shopping:3, meal:3, housework:3,
+                 handyman:3, laundry:3, medication:3, money:3 };
+  const fa = extra => {
+    const a = { formType: "ghf_initial" };
+    app.seedSchemaFields(a, app.GHF_SECTIONS);
+    Object.assign(a, extra);
+    app.clearHiddenSchemaAnswers(a, app.GHF_SECTIONS);
+    return { a, block: sectOf(app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS).A,
+      "FUNCTIONAL ASSESSMENT") };
+  };
+
+  block("pre-op: both instruments, no timing line of its own",
+    fa({ ghf_funcTiming: "pre" }).block,
+`FUNCTIONAL ASSESSMENT
+Modified Barthel Index (MBI): Not tested due to pre-operation
+Chinese Lawton IADL: Not tested due to pre-operation`);
+
+  // Post-op wording is unchanged from before the section had a choice at all.
+  ok("post-op still reads \"Post-operation Day 2\"",
+     fa({ ghf_funcTiming: "post", ghf_funcTiming__d_post: "2", ghf_mbi: MBI, ghf_lawton: IADL })
+       .block.split("\n")[1] === "Post-operation Day 2");
+  ok("and the scores still print under it",
+     /Modified Barthel Index \(MBI\): 100\/100/.test(
+       fa({ ghf_funcTiming: "post", ghf_funcTiming__d_post: "2", ghf_mbi: MBI }).block));
+
+  // The gate now comes from two directions, and a hidden answer is erased, so a score
+  // entered before Pre-op was chosen must not survive behind it.
+  const switched = fa({ ghf_funcTiming: "pre", ghf_mbi: MBI, ghf_lawton: IADL,
+                        ghf_mbiComment: "fair tolerance", ghf_mbiOverall: ["supervision"] });
+  ok("choosing Pre-op clears a score entered first",
+     app.isBlankAnswer(switched.a.ghf_mbi) && app.isBlankAnswer(switched.a.ghf_lawton),
+     JSON.stringify([switched.a.ghf_mbi, switched.a.ghf_lawton]));
+  ok("and the comment and overall level with it",
+     !switched.a.ghf_mbiComment && app.isBlankAnswer(switched.a.ghf_mbiOverall));
+
+  // "Not tested" for a reason of its own is a separate matter and still works.
+  ok("a reason other than pre-op still prints",
+     /Modified Barthel Index \(MBI\): Not tested due to pain/.test(
+       fa({ ghf_funcTiming: "post", ghf_funcTiming__d_post: "2",
+            ghf_mbiStatus: "not_tested", ghf_mbiStatus__d_not_tested: "pain" }).block));
+
+  // The whole point: these two could contradict each other before.
+  ok("neither instrument offers Pre-op any more",
+     ["ghf_mbiStatus", "ghf_lawtonStatus"].every(id =>
+       !app.qOptions(app.schemaQuestions(app.GHF_SECTIONS).find(q => q.id === id))
+          .some(o => o.value === "pre_op")));
+  ok("and the day box is gone with it",
+     !app.schemaQuestions(app.GHF_SECTIONS).some(q => q.id === "ghf_funcPod"));
+
+  // The handover line reads the same fact from a different place, so it has to follow.
+  const otLine = t => {
+    const a = { formType: "ghf_initial" };
+    app.seedSchemaFields(a, app.GHF_SECTIONS);
+    a.ghf_funcTiming = t;
+    app.clearHiddenSchemaAnswers(a, app.GHF_SECTIONS);
+    return app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS).G;
+  };
+  ok("the Green Box says why there is no ADL score",
+     otLine("pre") === "Current ADL: Not tested due to pre-operation", otLine("pre"));
+  ok("and says nothing of the sort when post-op", otLine("post") === "", otLine("post"));
 }
 
 report();

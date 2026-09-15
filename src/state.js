@@ -11,7 +11,7 @@ import { seedOrthoDayFields } from "./forms/ortho-day.js";
 import { FORM_TYPES } from "./forms/registry.js";
 import { goHome, render } from "./render.js";
 import { seedSchemaFields } from "./schema/engine.js";
-import { objField, today, uid } from "./util.js";
+import { isBlankAnswer, objField, today, uid } from "./util.js";
 
 export const STORAGE_KEY = "ortho.assessments.v1";
 
@@ -90,6 +90,26 @@ export const Storage = {
       // written before 2026-09-12.
       const o2 = a.ghf_vitals && typeof a.ghf_vitals === "object"
         ? String(a.ghf_vitals.o2 || "").trim() : "";
+      // Operative timing for the functional assessment was a day number plus a Pre-op
+      // chip on each of the two instruments, which could contradict each other. It is
+      // one choice for the section now. Removable once no device holds a record
+      // written before 2026-09-16.
+      if (!a.ghf_funcTiming) {
+        // Where a record says both, Pre-op wins: it was an explicit statement that the
+        // instruments were not tested, where a day may have been typed out of habit.
+        // The day stays on the record either way, simply unread.
+        if (a.ghf_mbiStatus === "pre_op" || a.ghf_lawtonStatus === "pre_op") {
+          a.ghf_funcTiming = "pre";
+        } else if (!isBlankAnswer(a.ghf_funcPod)) {
+          a.ghf_funcTiming = "post";
+          a.ghf_funcTiming__d_post = String(a.ghf_funcPod);
+        }
+      }
+      // "Pre-op" is no longer one of their answers, so leaving it would gate the grids
+      // shut against a value nothing can now clear.
+      ["ghf_mbiStatus", "ghf_lawtonStatus"].forEach(k => {
+        if (a[k] === "pre_op") a[k] = "";
+      });
       if (o2 && !a.ghf_o2 && !a.ghf_o2Flow) {
         const litres = o2.match(/^(\d+(?:\.\d+)?)\s*L/i);
         if (/room\s*air/i.test(o2)) a.ghf_o2 = "room";

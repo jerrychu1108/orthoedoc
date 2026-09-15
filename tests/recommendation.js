@@ -114,10 +114,24 @@ console.log("\n6. Others");
   ok("unpicking clears the chip and its text",
      JSON.stringify(un.ghf_treatmentPlan) === "[]" && !un.ghf_treatmentPlan__d_other_plan,
      JSON.stringify([un.ghf_treatmentPlan, un.ghf_treatmentPlan__d_other_plan]));
-  ok("Recommendation has no Others, as the team's list has none", (function () {
-    const q = schemaQuestions(GHF_SECTIONS).find(x => x.id === "ghf_recommendation");
-    return !qOptions(q).some(o => /^Others?$/.test(o.label));
-  })());
+  // Recommendation used to be the one list without a free-text chip, and this check
+  // said so. The team asked for one, so it now pins the same behaviour as the other
+  // two rather than the absence.
+  ok("Recommendation prints its typed text alone",
+     after(E({ ghf_recommendation: ["other_rec"],
+       ghf_recommendation__d_other_rec: "Refer to community OT" }), "Recommendation:") ===
+     "Refer to community OT");
+  ok("bare label when empty", after(E({ ghf_recommendation: ["other_rec"] }),
+     "Recommendation:") === "Others");
+  ok("and it sorts last, however it was tapped",
+     after(E({ ghf_recommendation: ["other_rec", "Continue Hip Rehabilitation Program"],
+       ghf_recommendation__d_other_rec: "Refer to community OT" }), "Recommendation:") ===
+     "Continue Hip Rehabilitation Program, Refer to community OT");
+  const unRec = tap("ghf_recommendation", "Others",
+    { ghf_recommendation: ["other_rec"], ghf_recommendation__d_other_rec: "Refer to community OT" });
+  ok("unpicking clears the chip and its text",
+     JSON.stringify(unRec.ghf_recommendation) === "[]" && !unRec.ghf_recommendation__d_other_rec,
+     JSON.stringify([unRec.ghf_recommendation, unRec.ghf_recommendation__d_other_rec]));
 }
 
 console.log("\n7. Unanswered lists");

@@ -12,7 +12,7 @@ import { answerOf } from "../schema/report.js";
 import {
   LAWTON_ITEMS, MBI_ITEMS, hasAnyScore, linearItems, scoreTotal
 } from "../score.js";
-import { isBlankAnswer, objField, wrapSemicolons } from "../util.js";
+import { isBlankAnswer, joinList, objField, wrapSemicolons } from "../util.js";
 
 // Chinese Lawton IADL — 9 items × 3 (totals 27)
 // The MBI as the GHF form scores it: three items a device can zero outright. Keys,
@@ -134,6 +134,22 @@ export const GHF_LEVEL_LABELS = [
   { value: "dependent", label: "Dependent Level" }
 ];
 
+// The two instruments' titles, named once: the status lines and the pre-operation
+// lines both print them, and they must not drift apart.
+const GHF_MBI_TITLE  = "Modified Barthel Index (MBI)";
+// Printed by the section's Pre-op option and repeated on the handover line, which reads
+// the same fact from a different place — so the wording is named once.
+const GHF_NOT_TESTED_PRE_OP = "Not tested due to pre-operation";
+const GHF_IADL_TITLE = "Chinese Lawton IADL";
+
+// Time, place and person, named once: the chips and the note's wording both read
+// from here, so neither can drift from the other.
+export const GHF_ORIENT_ITEMS = [
+  { value: "time",   label: "Time",   reportLabel: "time" },
+  { value: "place",  label: "Place",  reportLabel: "place" },
+  { value: "person", label: "Person", reportLabel: "person" }
+];
+
 // ── Computed fields ────────────────────────────────────────────────────────
 // Derived on every read and never stored, so they cannot drift out of step with the
 // answers they are read from. Named by a question's `compute` key and reached through
@@ -206,7 +222,11 @@ export const GHF_COMPUTED = {
     // there is no figure for "MBI" to caption, so the status stands alone.
     if (now) lines.push("Current ADL: MBI " + now + (level ? " (" + level + ")" : ""));
     else {
-      const status = answerOf(a, "ghf_mbiStatus");
+      // Pre-op is recorded once for the section now rather than on the instrument, so
+      // the handover line has to ask there too — otherwise a pre-operative assessment
+      // would quietly drop its ADL line instead of saying why there is no score.
+      const status = answerOf(a, "ghf_mbiStatus") ||
+        (a.ghf_funcTiming === "pre" ? GHF_NOT_TESTED_PRE_OP : "");
       if (status) lines.push("Current ADL: " + status);
     }
     return lines.join("\n");
@@ -214,6 +234,24 @@ export const GHF_COMPUTED = {
 
   // One line for the three tests, each either its score or the status standing in
   // for a result that never came.
+  // Reality orientation reads as a pair of findings, not a list of ticks: what the
+  // patient managed, and what they did not. A reader of "Oriented to time" alone
+  // cannot tell whether place and person failed or were never asked.
+  orientation(a) {
+    const picked = Array.isArray(a.ghf_orientation) ? a.ghf_orientation : [];
+    if (!picked.length) return "";
+    if (picked.includes("unable")) return "Unable to assess orientation";
+
+    const say = list => joinList(list.map(it => it.reportLabel), ", ", " and ");
+    if (picked.includes("disoriented")) return "Disoriented to " + say(GHF_ORIENT_ITEMS);
+
+    const yes = GHF_ORIENT_ITEMS.filter(it => picked.includes(it.value));
+    const no  = GHF_ORIENT_ITEMS.filter(it => !picked.includes(it.value));
+    if (!yes.length) return "";
+    return "Oriented to " + say(yes) +
+      (no.length ? "; Disoriented to " + say(no) : "");
+  },
+
   cognitiveSummary(a) {
     const parts = [
       ["AMT",  "ghf_amt",  "ghf_amtStatus",  null],
@@ -573,17 +611,20 @@ export const GHF_SECTIONS = [
         ],
         hideInReport: true },
 
-      { id: "ghf_orientation", type: "multi", label: "Reality orientation — oriented to",
-        exclusive: "unable", joinLast: " and ",
-        options: [
-          { value: "time", label: "Time", reportLabel: "time" },
-          { value: "place", label: "Place", reportLabel: "place" },
-          { value: "person", label: "Person", reportLabel: "person" },
+      // What the patient failed matters as much as what they managed, so the line is
+      // composed below rather than printed from the ticks. "Disoriented to all" earns
+      // its own chip because no ticks at all already means the question was not asked.
+      { id: "ghf_orientation", type: "multi", label: "Reality orientation",
+        exclusive: ["unable", "disoriented"],
+        options: GHF_ORIENT_ITEMS.concat([
+          { value: "disoriented", label: "Disoriented to all" },
           // Alone by definition, and it cannot be read into the frame below.
-          { value: "unable", label: "Unable to assess",
-            report: "Unable to assess orientation" }
-        ],
-        report: "Oriented to {answer}" },
+          { value: "unable", label: "Unable to assess" }
+        ]),
+        hideInReport: true },
+
+      { id: "ghf_orientationLine", type: "computed", label: "Orientation",
+        compute: "orientation", reportOnly: true, report: "{answer}" },
 
       { id: "ghf_speech", type: "multi", label: "Speech",
         options: [
@@ -853,41 +894,52 @@ export const GHF_SECTIONS = [
     part: "A",
     reportTitle: "FUNCTIONAL ASSESSMENT",
     questions: [
-      { id: "ghf_funcPod", type: "number", label: "Post-operation day", max: 999,
-        prefix: "Post-operation Day ", placeholder: "day",
+      // One choice for the whole section. Pre-op used to be a chip on each instrument,
+      // which let a record say "Post-operation Day 2" and "Not tested due to
+      // pre-operation" at once; there is now nowhere for those two to disagree.
+      { id: "ghf_funcTiming", type: "single", label: "Assessment timing",
+        options: [
+          // Prints the instruments' own lines rather than a timing line of its own —
+          // both of them say pre-operation, so a third line would only repeat it.
+          { value: "pre", label: "Pre-op",
+            report: GHF_MBI_TITLE  + ": " + GHF_NOT_TESTED_PRE_OP + "\n" +
+                    GHF_IADL_TITLE + ": " + GHF_NOT_TESTED_PRE_OP },
+          { value: "post", label: "Post-op", reportLabel: "Post-operation",
+            detail: true, detailPlaceholder: "day", detailJoiner: " Day " }
+        ],
         report: "{answer}" },
 
       // A score grid cannot carry an option, so the escape hatch sits above it and
-      // gates it, the way each cognitive test's status does.
+      // gates it, the way each cognitive test's status does. Pre-op is no longer one
+      // of its answers — the section says that now.
       { id: "ghf_mbiStatus", type: "single", label: "Modified Barthel Index",
+        showIf: { questionId: "ghf_funcTiming", notEquals: "pre" },
         options: [
-          { value: "pre_op", label: "Pre-op",
-            reportLabel: "Not tested due to pre-operation" },
           { value: "not_tested", label: "Not tested", detail: true,
             detailPlaceholder: "reason", detailJoiner: " due to " }
         ],
-        report: "Modified Barthel Index (MBI): {answer}" },
+        report: GHF_MBI_TITLE + ": {answer}" },
 
       // The same item lists the ortho_day form scores, so the wheelchair rule and
       // the /100 denominator behave identically in both.
       { id: "ghf_mbi", type: "score", label: "Modified Barthel Index", hideLabel: true,
-        showIf: { questionId: "ghf_mbiStatus",
-          notAnyOf: ["not_tested", "pre_op"] },
+        showIf: [{ questionId: "ghf_mbiStatus", notEquals: "not_tested" },
+          { questionId: "ghf_funcTiming", notEquals: "pre" }],
         items: GHF_MBI_ITEMS, notAssessed: true, quickFill: true,
         breakdown: { perLine: 5, sep: "   " },
-        report: "Modified Barthel Index (MBI): {answer}" },
+        report: GHF_MBI_TITLE + ": {answer}" },
 
       // Sits under the sub-scores, so it follows the grid's gate: with no score there
       // is nothing to comment on.
       { id: "ghf_mbiComment", type: "text", label: "Comment",
-        showIf: { questionId: "ghf_mbiStatus",
-          notAnyOf: ["not_tested", "pre_op"] },
+        showIf: [{ questionId: "ghf_mbiStatus", notEquals: "not_tested" },
+          { questionId: "ghf_funcTiming", notEquals: "pre" }],
         placeholder: "e.g. fair activity tolerance",
         report: "Comment: {answer}" },
 
       { id: "ghf_mbiOverall", type: "range", label: "Overall functional level",
-        showIf: { questionId: "ghf_mbiStatus",
-          notAnyOf: ["not_tested", "pre_op"] },
+        showIf: [{ questionId: "ghf_mbiStatus", notEquals: "not_tested" },
+          { questionId: "ghf_funcTiming", notEquals: "pre" }],
         options: GHF_ASSIST_LEVELS,
         report: "Overall functional level: {answer}" },
 
@@ -895,20 +947,19 @@ export const GHF_SECTIONS = [
       // IADL appears once however it was recorded.
       { id: "ghf_lawtonStatus", type: "single", label: "Chinese Lawton IADL",
         blankBefore: true,
+        showIf: { questionId: "ghf_funcTiming", notEquals: "pre" },
         options: [
-          { value: "pre_op", label: "Pre-op",
-            reportLabel: "Not tested due to pre-operation" },
           { value: "not_tested", label: "Not tested", detail: true,
             detailPlaceholder: "reason", detailJoiner: " due to " }
         ],
-        report: "Chinese Lawton IADL: {answer}" },
+        report: GHF_IADL_TITLE + ": {answer}" },
 
       { id: "ghf_lawton", type: "score", label: "Chinese Lawton IADL", hideLabel: true,
-        showIf: { questionId: "ghf_lawtonStatus",
-          notAnyOf: ["not_tested", "pre_op"] },
+        showIf: [{ questionId: "ghf_lawtonStatus", notEquals: "not_tested" },
+          { questionId: "ghf_funcTiming", notEquals: "pre" }],
         items: LAWTON_ITEMS, blankBefore: true, quickFill: true,
         breakdown: { perLine: 5, sep: "   " },
-        report: "Chinese Lawton IADL: {answer}" }
+        report: GHF_IADL_TITLE + ": {answer}" }
     ]
   },
 
@@ -965,6 +1016,11 @@ export const GHF_SECTIONS = [
     label: "HDRS",
     title: "Home Discharge Readiness Scale (HDRS)",
     part: "A",
+    // Only completed when discharge planning is actually underway, so it stays shut
+    // until it is wanted — and opens itself again once it has been rated. The hint
+    // rides in the card header, where it is readable without opening anything.
+    collapsed: true,
+    hint: "Applicable if discharge planning indicated",
     reportTitle: "HOME DISCHARGE READINESS SCALE (HDRS)",
     questions: [
       { id: "ghf_hdrs", type: "score", label: "HDRS elements", hideLabel: true,
@@ -996,8 +1052,9 @@ export const GHF_SECTIONS = [
     // offered flattened as a part of its own.
     flatPart: { key: "G", join: "; " },
     questions: [
+      // No placeholder: the block is headed "OT Comment" on the card and "OT COMMENT"
+      // in the note, so a grey prompt repeats what is already said twice.
       { id: "ghf_otComment", type: "textarea", label: "OT comment", hideLabel: true,
-        placeholder: "Handover note…",
         report: "{answer}" },
 
       // Both blocks read figures recorded elsewhere, so the handover line stands on
@@ -1104,7 +1161,10 @@ export const GHF_SECTIONS = [
           { value: "suggest", label: "Suggest",
             subJoiner: " ", subSuffix: "", subJoin: "/",
             sub: ["Direct discharge home", "Direct discharge OAH",
-              "Convalescent Hospital (KH/BH)"] }
+              "Convalescent Hospital (KH/BH)"] },
+          // As the other two lists have. No itemSuffix: " done" belongs to Treatment.
+          { value: "other_rec", label: "Others", detail: true, detailOnly: true,
+            detailPlaceholder: "Specify…" }
         ],
         report: "Recommendation:\n{answer}" }
     ]

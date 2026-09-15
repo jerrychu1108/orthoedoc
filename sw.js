@@ -1,4 +1,4 @@
-const CACHE_NAME = "ortho-v72";
+const CACHE_NAME = "ortho-v77";
 const FILES = [
   "./",
   "index.html",

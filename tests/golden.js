@@ -51,10 +51,12 @@ function buildSchema(app, formId, skipStatus) {
 
   app.schemaQuestions(sections).forEach(q => {
     if (!app.isAnswerable(q)) return;
-    // The "not tested" escape hatches hide the instrument behind them, so one pass
-    // leaves them blank to reach the scores and one answers them to reach the status
-    // wording. Between the two, both sides of every such branch are in the snapshot.
-    if (skipStatus && /Status$/.test(q.id)) return;
+    // The gates — a "not tested" escape hatch, or a Pre-op timing choice — hide the
+    // instrument behind them, so one pass leaves them blank to reach the scores and
+    // one answers them to reach the status wording. Between the two, both sides of
+    // every such branch are in the snapshot. A timing question left out of this would
+    // quietly take the scores with it and the snapshot would get weaker, not fail.
+    if (skipStatus && /Status$|Timing$/.test(q.id)) return;
     const v = answer(q);
     if (v === null) return;
     a[q.id] = v;

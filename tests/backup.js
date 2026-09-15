@@ -121,6 +121,47 @@ console.log("\n4b. Oxygen status moves out of the vitals composite");
      line(g.r3) + " | " + line(g.r1));
 }
 
+console.log("\n4c. Functional timing folds into one choice");
+{
+  // It was a day number plus a Pre-op chip on each instrument, which could disagree.
+  const rec2 = (id, f) => rec(id, "2026-09-10T10:00:00Z", f);
+  reset(); setStore({});
+  run("importAssessments", JSON.stringify({ app: "ortho-ot", schema: 1, assessments: {
+    d1: rec2("d1", { ghf_funcPod: 3 }),
+    d2: rec2("d2", { ghf_mbiStatus: "pre_op" }),
+    d3: rec2("d3", { ghf_lawtonStatus: "pre_op" }),
+    // The contradiction the change exists to remove.
+    d4: rec2("d4", { ghf_funcPod: 2, ghf_mbiStatus: "pre_op" }),
+    d5: rec2("d5", {})
+  }}));
+  const g = getStore();
+  ok("a day becomes Post-op, carrying the day",
+     g.d1.ghf_funcTiming === "post" && g.d1.ghf_funcTiming__d_post === "3",
+     JSON.stringify([g.d1.ghf_funcTiming, g.d1.ghf_funcTiming__d_post]));
+  ok("a Pre-op MBI becomes Pre-op", g.d2.ghf_funcTiming === "pre", g.d2.ghf_funcTiming);
+  ok("a Pre-op IADL does too", g.d3.ghf_funcTiming === "pre", g.d3.ghf_funcTiming);
+  // Pre-op was an explicit statement that the instruments were not tested; a day may
+  // have been typed out of habit. The day is still on the record, simply unread.
+  ok("where a record says both, Pre-op wins", g.d4.ghf_funcTiming === "pre",
+     g.d4.ghf_funcTiming);
+  ok("and the day is kept, not destroyed", g.d4.ghf_funcPod === 2, String(g.d4.ghf_funcPod));
+  ok("a record saying neither is left alone", !g.d5.ghf_funcTiming,
+     JSON.stringify(g.d5.ghf_funcTiming));
+
+  // "pre_op" is no longer one of their answers, and leaving it would gate the grids
+  // shut against a value nothing can clear.
+  ok("the retired status value is cleared",
+     !g.d2.ghf_mbiStatus && !g.d3.ghf_lawtonStatus,
+     JSON.stringify([g.d2.ghf_mbiStatus, g.d3.ghf_lawtonStatus]));
+
+  const line = a => app.buildSchemaSummary(a, app.GHF_SECTIONS, app.GHF_PARTS).A
+    .split("\n").filter(l => /Barthel|Post-operation Day/.test(l)).join(" | ");
+  ok("and each reads back correctly",
+     /Post-operation Day 3/.test(line(g.d1)) &&
+     /Not tested due to pre-operation/.test(line(g.d2)),
+     line(g.d1) + "  //  " + line(g.d2));
+}
+
 console.log("\n5. A round trip is lossless");
 {
   reset();

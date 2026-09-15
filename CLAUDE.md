@@ -152,7 +152,7 @@ reads back as "Fair to Good") · `composite` (labelled parts on one line) · `sc
 
 | Key | Effect |
 |---|---|
-| `showIf` | One condition, four operators: `equals`, `notEquals`, `anyOf`, `notAnyOf` |
+| `showIf` | One condition, or a list of them all of which must hold. Four operators: `equals`, `notEquals`, `anyOf`, `notAnyOf` |
 | `report` | Note template; default `"{label}: {answer}"` |
 | `hideInReport` | Answered on the card, never printed |
 | `hideLabel` | Widget without its caption |
@@ -192,7 +192,12 @@ takes the named one's place in the note once rated — Wheelchair for Mobility).
 
 **Section keys:** `part` (which summary part it feeds), `reportTitle` (sub-heading in
 the note), `flatPart` (`{ key, join }` — also feed a second part as one line),
-`questions`. A section nobody answered is omitted entirely, heading included.
+`collapsed` (its cards start shut and open on a tap — for a block that is usually not
+indicated; a card that already holds answers opens itself, since `State.expanded` is
+cleared on every case open and a shut card over real answers reads as lost work),
+`hint` (a line under the card title saying when the block is worth opening — it sits in
+the **header**, so unlike a question's `hint`, which shares the name but renders in the
+body, it stays readable while the card is shut), `questions`. A section nobody answered is omitted entirely, heading included.
 
 **Part keys:** `key`, `title`, `limit` (character count beneath the box, red when
 over), `oneLine` (the editor refuses Enter and turns a pasted break into the
@@ -224,7 +229,7 @@ never names a form and a new form brings its own functions instead of adding to 
 shared table. They are derived on every read and never stored, so they cannot drift out
 of step with the answers they read.
 
-`GHF_COMPUTED` holds six:
+`GHF_COMPUTED` holds seven:
 
 | Name | Gives |
 |---|---|
@@ -232,6 +237,7 @@ of step with the answers they read.
 | `mocaCutoff` | That row's 16th-percentile threshold |
 | `hdrsLevel` | `Level 4 (Moderate High)` from the three factor ratings |
 | `hdrsFactors` | One line per HDRS factor, elements bracketed after it |
+| `orientation` | `Oriented to time; Disoriented to place and person` — both sides of the finding, from one set of ticks |
 | `adlSummary` | The OT comment's premorbid and current ADL lines |
 | `cognitiveSummary` | The OT comment's AMT / CDT / MoCA line |
 
@@ -268,7 +274,7 @@ field, while the same block prints in full under `COMMON ASSESSMENT NOTES`.
 
 ## Storage and migrations
 
-`Storage.load()` carries **eight** one-off migrations, each commented with the date
+`Storage.load()` carries **nine** one-off migrations, each commented with the date
 after which it can be removed. They exist because records already on ward devices were
 written against an older schema. When a field is renamed or re-homed, either add one or
 decide explicitly that old values are dropped — and say which in the commit message.
@@ -351,7 +357,7 @@ do not remove it to "test the service worker locally". Deploy and test it there.
 node tests/run.js
 ```
 
-Seven dependency-free harnesses live in `tests/`, and every one must pass before a
+Eight dependency-free harnesses live in `tests/`, and every one must pass before a
 change ships:
 
 | File | Covers |
@@ -362,6 +368,7 @@ change ships:
 | `claude-md.js` | This file — that every identifier it names exists, and every key the engine reads is documented here |
 | `backup.js` | Export and import: the envelope, refusing foreign files, merge-by-`updatedAt`, migrations on the way in, and a lossless round trip |
 | `golden.js` | The **whole** note for both form types, byte-for-byte, against `golden.txt`. The others pin the blocks the team specified; this pins everything else. Regenerate with `node tests/golden.js --write` and read the diff |
+| `form-ui.js` | How the form's cards behave rather than what the note says: a `collapsed` section starting shut, opening on a tap, opening itself once answered, and staying shut when deliberately shut. Also that `ortho_day`'s checklists, which share `collapsibleCard`, still default closed |
 | `boot.js` | Imports `src/main.js` — the real entry point — and walks every view and every section tab of every form. The only harness that loads the whole module graph, so a missing export or an uninitialised cyclic binding fails here first |
 
 Each calls `load()` from `tests/lib/harness.js`, which installs the `document`,

@@ -35,7 +35,7 @@ console.log("1. Every identifier the doc names exists in app.js");
 
   const computed = harvest(/^  (\w+)\(a\) \{/gm,
     app.slice(app.indexOf("const GHF_COMPUTED")).split("\n};")[0]);
-  ok("six computed fields, all documented", computed.length === 6 &&
+  ok("seven computed fields, all documented", computed.length === 7 &&
      computed.every(c => doc.includes(c)), computed.join());
 }
 
@@ -110,7 +110,7 @@ console.log("\n4. Quoted values match the code");
   ok("storage key", app.includes('"ortho.assessments.v1"') &&
      doc.includes("ortho.assessments.v1"));
   const migrations = (app.match(/Removable once/g) || []).length;
-  ok("migration count is " + migrations, doc.includes("**eight**") && migrations === 8,
+  ok("migration count is " + migrations, doc.includes("**nine**") && migrations === 9,
      String(migrations));
   const types = harvest(/case "([a-z]+)":/g,
     app.slice(app.indexOf("function schemaWidget")).split("\n}")[0]);

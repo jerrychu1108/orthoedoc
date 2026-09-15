@@ -141,11 +141,25 @@ export function formCard(title, ...fields) {
 }
 
 // Collapsible subsection card — State.expanded[subKey] drives open/closed.
-export function collapsibleCard(subKey, title, count, buildBody) {
-  const isOpen = !!State.expanded[subKey];
+// opts.open  — where an untouched card starts. It applies only until the user has
+//              decided for themselves: once they tap, the key is set and their choice
+//              wins, open or shut. Omit it and an untouched card is closed, which is
+//              what every caller before it relied on.
+// opts.hint   — a line under the title saying when the card is worth opening. It sits
+//              in the header, not the body, so it is readable while the card is shut —
+//              which is the only time it can do any good.
+export function collapsibleCard(subKey, title, count, buildBody, opts = {}) {
+  const isOpen = State.expanded[subKey] === undefined
+    ? !!opts.open : !!State.expanded[subKey];
+  // Stacked only when there is a hint, so a card without one keeps the markup it had.
+  const titleEl = opts.hint
+    ? el("span", { class: "collapsible-title stacked" },
+        el("span", {}, title),
+        el("span", { class: "collapsible-hint" }, opts.hint))
+    : el("span", { class: "collapsible-title" }, title);
   const header = el("div", { class: "collapsible-header" + (isOpen ? " open" : "") },
     el("span", { class: "collapsible-caret" }, isOpen ? "▼" : "▶"),
-    el("span", { class: "collapsible-title" }, title),
+    titleEl,
     count ? el("span", { class: "collapsible-count" }, "(" + count + ")") : null
   );
   header.addEventListener("click", () => { State.expanded[subKey] = !isOpen; render(); });

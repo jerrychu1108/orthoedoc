@@ -4,13 +4,12 @@
 
 GREEN BOX
 =========
-otComment note; Premorbid ADL: MBI 100/100; Current ADL: MBI 100/100 (Supervision to Independent). adlNote text; Pre-op cognitive function: AMT: 10/10; CDT: 2/10; MoCA: 30/30 (>16th percentile). cogNote text
+otComment note; Premorbid ADL: MBI 100/100; Current ADL: MBI 100/100 (Supervision to Independent). adlNote text; Cognitive function: AMT: 10/10; CDT: 2/10; MoCA: 30/30 (>16th percentile). cogNote text
 
 COMMON ASSESSMENT NOTES
 =======================
 <Initial Assessment Note>
 
-[Pre-operation]
 Vital signs: BP 1 mmHg; Pulse 2/min; SpO2 3%, Room air; Afebrile
 
 PREMORBID FUNCTION
@@ -32,8 +31,6 @@ MENTAL AND COGNITIVE FUNCTION:
 Alert. Follow 1 step command
 Oriented to time, place and person
 Speech: Normal, Limited, No verbal response, other detail
-
-Cognitive Assessment (Pre-operation):
 Abbreviated Mental Test (AMT): 10/10 (cut off <6 indicated further evaluations for possibility of cognitive impairment)
 Age: 1/1; Time: 1/1; Address to recall: 1/1; Current year: 1/1; Place: 1/1; Recognition of two persons: 1/1; Date of birth: 1/1; Date of Mid-Autumn Festival: 1/1; Name of present Governor or Chinese leader: 1/1; Count from 20 to 1 backwards: 1/1
 
@@ -58,7 +55,6 @@ Complications: Delirium, Pressure sore (Site: pressure_sore detail), DVT
 Remarks: remarks note
 
 FUNCTIONAL ASSESSMENT
-Post-operation Day 2
 Modified Barthel Index (MBI): 100/100
 Bowels: 10/10   Bladder: 10/10   Grooming: 5/5   Toileting: 10/10   Feeding: 10/10
 Dressing: 10/10   Bathing: 5/5   Transfer: 15/15   Mobility: 15/15   Stairs: 10/10
@@ -85,7 +81,7 @@ otComment note
 Premorbid ADL: MBI 100/100
 Current ADL: MBI 100/100 (Supervision to Independent)
 adlNote text
-Pre-op cognitive function: AMT: 10/10; CDT: 2/10; MoCA: 30/30 (>16th percentile)
+Cognitive function: AMT: 10/10; CDT: 2/10; MoCA: 30/30 (>16th percentile)
 cogNote text
 
 PROBLEM
@@ -103,7 +99,7 @@ Treatment plan:
 Continue ADL training, Maintenance training, other_plan detail
 
 Recommendation:
-Continue Hip Rehabilitation Program, Suggest Direct discharge home
+Continue Hip Rehabilitation Program, Suggest Direct discharge home, other_rec detail
 
 ########################################################################
 # Geriatric Hip Fracture Initial — instruments not tested
@@ -162,9 +158,7 @@ Complications: Delirium, Pressure sore (Site: pressure_sore detail), DVT
 Remarks: remarks note
 
 FUNCTIONAL ASSESSMENT
-Post-operation Day 2
 Modified Barthel Index (MBI): Not tested due to pre-operation
-
 Chinese Lawton IADL: Not tested due to pre-operation
 
 FALL ASSESSMENT
@@ -201,7 +195,7 @@ Treatment plan:
 Continue ADL training, Maintenance training, other_plan detail
 
 Recommendation:
-Continue Hip Rehabilitation Program, Suggest Direct discharge home
+Continue Hip Rehabilitation Program, Suggest Direct discharge home, other_rec detail
 
 ########################################################################
 # Ortho Day Rehab FU
